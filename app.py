@@ -3,8 +3,8 @@ import requests
 
 app = Flask(__name__)
 
-CLOUD_NAME = "XXX"     # on remplira plus tard
-API_KEY    = "YYY"
+CLOUD_NAME = "dbiqygsjx"     # on remplira plus tard
+API_KEY    = "838654343811734"
 UPLOAD_URL = f"https://api.cloudinary.com/v1_1/{CLOUD_NAME}/auto/upload"
 
 @app.route("/")
