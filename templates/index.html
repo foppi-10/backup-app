@@ -2,31 +2,175 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Sauvegarde Cloud Render</title>
+  <title>Sauvegarde Cloud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
   <style>
-    body{font-family:Arial;margin:40px;background:#f2f2f2}
-    h1{color:#333}
-    button{padding:10px 20px;font-size:16px}
-    pre{background:#fff;padding:15px;border:1px solid #ccc}
+    :root {
+      --bg: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --text: #ffffff;
+      --accent: #ff7eb3;
+      --accent-hover: #ff5983;
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      --radius: 16px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem 3rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      animation: fadeIn 1.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 500;
+      box-shadow: 0 0 15px rgba(255, 126, 179, 0.5);
+    }
+
+    .file-label:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 25px rgba(255, 126, 179, 0.8);
+      transform: scale(1.05);
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.75rem 2rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 0 15px rgba(255, 126, 179, 0.5);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 15px rgba(255, 126, 179, 0.5); }
+      50% { box-shadow: 0 0 30px rgba(255, 126, 179, 0.9); }
+      100% { box-shadow: 0 0 15px rgba(255, 126, 179, 0.5); }
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+      transform: scale(1.05);
+    }
+
+    #result {
+      margin-top: 1.5rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow: auto;
+      text-align: left;
+      display: none;
+    }
+
+    .emoji {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
-<body>
-  <h1>1. Choisissez un fichier à sauvegarder</h1>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" name="file" required>
-    <button type="submit">Sauvegarder dans le cloud</button>
-  </form>
 
-  <h2>Résultat</h2>
-  <pre id="result">(le lien apparaîtra ici)</pre>
+<body>
+  <div class="glass-card">
+    <div class="emoji">☁️</div>
+    <h1>Sauvegarder dans le cloud</h1>
+    <p>Glissez un fichier et obtenez instantanément un lien public.</p>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" id="fileInput" required>
+      <label for="fileInput" class="file-label">📁 Choisir un fichier</label>
+      <button type="submit">🚀 Sauvegarder</button>
+    </form>
+
+    <pre id="result"></pre>
+  </div>
 
   <script>
-    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+    const form = document.getElementById('uploadForm');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const data = new FormData(e.target);
-      const res  = await fetch("/upload", {method:"POST", body:data});
+      result.style.display = 'block';
+      result.textContent = 'Envoi en cours…';
+
+      const data = new FormData(form);
+      const res = await fetch('/upload', { method: 'POST', body: data });
       const json = await res.json();
-      document.getElementById("result").textContent = JSON.stringify(json, null, 2);
+
+      result.textContent = JSON.stringify(json, null, 2);
     });
   </script>
 </body>
